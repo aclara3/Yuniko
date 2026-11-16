@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yuniku — cada refeição, um encontro único</title>
+<meta name="description" content="Yuniku. Ichigo Ichie: cada refeição, um encontro único.">
+<script>try{if(JSON.parse(localStorage.getItem("yuniku:tema"))==="dark")document.documentElement.setAttribute("data-theme","dark")}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Federo&family=Hina+Mincho&family=Outfit:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="site-header"></div>
+
+<main>
+  <!-- HERO -->
+  <section class="hero" id="inicio" aria-labelledby="hero-title">
+    <div class="hero-content">
+      <h1 id="hero-title">bem-vindo ao <span class="sr-only">Yuniku</span></h1>
+      <div class="hero-logo-wrap"><span class="hero-logo" role="img" aria-label="Yuniku"></span></div>
+      <p class="hero-tagline"><span>Yuniku. Ichigo Ichie:</span><span>cada refeição, um encontro</span><span>único.</span></p>
+    </div>
+    <div class="hero-sea" aria-hidden="true"></div>
+    <div class="hero-band" aria-hidden="true"></div>
+    <a class="scroll-cue" href="#favoritos" aria-label="Rolar para os favoritos"><svg viewBox="0 0 78 72" aria-hidden="true"><path d="M6 8l33 28 33-28M6 34l33 28 33-28"/></svg></a>
+  </section>
+
+  <!-- FAVORITOS -->
+  <section class="fav" id="favoritos" aria-labelledby="fav-title">
+    <div class="deco-edge" aria-hidden="true"></div>
+    <div class="stage fav-stage">
+      <div class="deco-leaves" aria-hidden="true"></div>
+      <h2 class="fav-title" id="fav-title">favoritos</h2>
+      <div class="fav-panel">
+        <div class="waves" aria-hidden="true"></div>
+        <ul class="fav-list" id="fav-list"></ul>
+      </div>
+      <div class="fav-photo"><img src="ramen.png" alt="Tigela de lámen com ovo e cebolinha"></div>
+      <div class="fav-cards" id="fav-cards"></div>
+      <div class="nov-title" role="img" aria-label="Novidades"></div>
+      <aside class="nov" id="nov" aria-label="Novidades"></aside>
+    </div>
+  </section>
+
+  <!-- PRODUTOS -->
+  <section class="products" id="produtos" aria-label="Produtos">
+    <div class="deco-edge" aria-hidden="true"></div>
+    <div class="products-inner">
+      <div class="deco-leaves" aria-hidden="true"></div>
+      <div class="products-layout">
+        <div class="grid" id="product-grid" aria-live="polite"></div>
+        <aside class="cats" aria-label="Categorias">
+          <div class="cats-head"><h2>Categorias</h2><button type="button" id="cats-reset" aria-label="Limpar filtros" style="display:grid;place-items:center"><svg viewBox="0 0 24 24" aria-hidden="true" style="width:calc(var(--p)*24);height:calc(var(--p)*24);fill:none;stroke:#202020;stroke-width:1.5;stroke-linejoin:round"><path d="M2.5 4h19L14 12.6V20l-4-2v-5.4z"/></svg></button></div>
+          <div class="cat-group"><button type="button" class="cat-top cat-head-first" data-top aria-pressed="false">Mais vendidos</button></div>
+          <div class="cat-group"><button type="button" class="cat-top" data-cat="doces" aria-pressed="false">Doces</button></div>
+          <div class="cat-group">
+            <button type="button" class="cat-top" data-cat="salgados" aria-pressed="false">Salgados</button>
+            <button type="button" class="cat-sub" data-cat="salgados" data-sub="lamen" aria-pressed="false">Lámen</button>
+            <button type="button" class="cat-sub" data-cat="salgados" data-sub="japonesa" aria-pressed="false">Culinária japonesa</button>
+            <button type="button" class="cat-sub" data-cat="salgados" data-sub="chinesa" aria-pressed="false">Culinária chinesa</button>
+            <button type="button" class="cat-sub" data-cat="salgados" data-sub="tailandesa" aria-pressed="false">Culinária tailandesa</button>
+          </div>
+          <div class="cat-group">
+            <button type="button" class="cat-top" data-cat="bebidas" aria-pressed="false">Bebidas</button>
+            <button type="button" class="cat-sub" data-cat="bebidas" data-sub="alcoolicos" aria-pressed="false">Alcóolicos</button>
+            <button type="button" class="cat-sub" data-cat="bebidas" data-sub="nao-alcoolicos" aria-pressed="false">Não-alcóolicos</button>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="site-footer"></div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+<script src="home.js"></script>
+</body>
+</html>
