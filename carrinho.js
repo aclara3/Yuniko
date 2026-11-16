@@ -1,4 +1,4 @@
-/* carrinho.js — página do carrinho e histórico de pedidos */
+/* carrinho.js — página do carrinho, histórico e exportação do pedido em JSON */
 (function () {
   const Y = window.Yuniku, { esc, brl, ICON, cart } = Y;
   let couponOpen = false;
@@ -17,7 +17,9 @@
         <div class="cart-thumb">${img}</div>
         <div class="cart-info"><span class="nm">${esc(p.nome)}</span><span class="pr">${brl(p.preco * i.qty)}</span></div>
         <div class="qty" role="group" aria-label="Quantidade de ${esc(p.nome)}">
-          <button type="button" data-dec="${p.id}" aria-label="Diminuir">−</button><span aria-live="polite">${i.qty}</span><button type="button" data-inc="${p.id}" aria-label="Aumentar">+</button>
+          <button type="button" data-dec="${p.id}" aria-label="Diminuir">−</button>
+          <span aria-live="polite">${i.qty}</span>
+          <button type="button" data-inc="${p.id}" aria-label="Aumentar">+</button>
         </div>
       </div>`;
     }).join('') : `<p class="cart-empty">Seu carrinho está vazio.<br><a href="index.html#produtos">Ver produtos</a></p>`;
@@ -38,7 +40,10 @@
 
   function renderOrders() {
     const orders = cart.orders(), box = document.getElementById('orders-body');
-    if (!orders.length) { box.innerHTML = '<p class="orders-empty">você não tem<br>histórico de pedidos</p>'; return; }
+    if (!orders.length) {
+      box.innerHTML = '<p class="orders-empty">você não tem<br>histórico de pedidos</p>';
+      return;
+    }
     box.innerHTML = '<ul class="orders-list">' + orders.map(o => {
       const d = new Date(o.quando);
       const resumo = o.itens.map(i => i.qty + '× ' + i.nome).join(', ');
@@ -48,26 +53,114 @@
     }).join('') + '</ul>';
   }
 
-  document.addEventListener('click', e => {
-    const t = e.target.closest('button'); if (!t) return;
-    if (t.dataset.inc) { const it = cart.items().find(i => i.id === +t.dataset.inc); cart.setQty(+t.dataset.inc, it.qty + 1); renderCart(); }
-    else if (t.dataset.dec) { const it = cart.items().find(i => i.id === +t.dataset.dec); cart.setQty(+t.dataset.dec, it.qty - 1); renderCart(); }
-    else if (t.id === 'coupon-open') { couponOpen = true; renderCart(); }
-    else if (t.id === 'coupon-remove') { cart.clearCoupon(); couponOpen = false; renderCart(); }
-    else if (t.id === 'coupon-apply') applyCoupon();
-    else if (t.id === 'checkout') {
-      const o = cart.checkout(); if (!o) return;
-      couponOpen = false; renderCart(); renderOrders(); Y.toast('Pedido realizado! Obrigado por escolher a Yuniku.');
-    }
-  });
-  document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'coupon-input') { e.preventDefault(); applyCoupon(); } });
+  // Cria o arquivo usando os mesmos produtos, quantidades e preços do carrinho.
+  function baixarPedidoJSON() {
+    const itens = cart.items();
+    const agora = new Date();
+    const codigo = 'YUN-' + agora.getTime();
+    const cupom = cart.coupon();
+    const subtotal = cart.subtotal();
+    const desconto = cupom ? subtotal * cupom.rate : 0;
 
-  function applyCoupon() {
-    const v = document.getElementById('coupon-input').value;
-    if (cart.setCoupon(v)) { couponOpen = false; renderCart(); Y.toast('Cupom aplicado'); }
-    else document.getElementById('coupon-msg').textContent = 'Cupom inválido. Confira o código.';
+    // O projeto ainda não possui login conectado ao banco; por isso usuario_id fica null.
+    const pedido = {
+      codigo_pedido: codigo,
+      usuario_id: null,
+      nome_loja: Y.data.storeName,
+      data_pedido: agora.toISOString(),
+      valor_total: Number(cart.total().toFixed(2)),
+      status: 'Pendente',
+      subtotal: Number(subtotal.toFixed(2)),
+      desconto: Number(desconto.toFixed(2)),
+      cupom: cupom ? cupom.code : null,
+      itens: itens.map(item => {
+        const produto = Y.byId(item.id);
+        return {
+          produto_id: produto.id,
+          nome: produto.nome,
+          quantidade: item.qty,
+          preco_unitario: Number(produto.preco.toFixed(2)),
+          subtotal: Number((produto.preco * item.qty).toFixed(2))
+        };
+      })
+    };
+
+    const arquivo = new Blob(
+      [JSON.stringify(pedido, null, 2)],
+      { type: 'application/json;charset=utf-8' }
+    );
+    const url = URL.createObjectURL(arquivo);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = codigo + '.json';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
   }
 
-  window.addEventListener('storage', () => { renderCart(); renderOrders(); });
-  document.addEventListener('DOMContentLoaded', () => { renderCart(); renderOrders(); });
+  document.addEventListener('click', e => {
+    const t = e.target.closest('button');
+    if (!t) return;
+
+    if (t.dataset.inc) {
+      const it = cart.items().find(i => i.id === +t.dataset.inc);
+      if (it) cart.setQty(+t.dataset.inc, it.qty + 1);
+      renderCart();
+    } else if (t.dataset.dec) {
+      const it = cart.items().find(i => i.id === +t.dataset.dec);
+      if (it) cart.setQty(+t.dataset.dec, it.qty - 1);
+      renderCart();
+    } else if (t.id === 'coupon-open') {
+      couponOpen = true;
+      renderCart();
+    } else if (t.id === 'coupon-remove') {
+      cart.clearCoupon();
+      couponOpen = false;
+      renderCart();
+    } else if (t.id === 'coupon-apply') {
+      applyCoupon();
+    } else if (t.id === 'checkout') {
+      if (!cart.items().length) return;
+
+      // Primeiro exporta os dados; depois registra o histórico e esvazia o carrinho.
+      baixarPedidoJSON();
+      const pedidoSalvo = cart.checkout();
+      if (!pedidoSalvo) return;
+
+      couponOpen = false;
+      renderCart();
+      renderOrders();
+      Y.toast('Pedido concluído! O arquivo JSON foi baixado.');
+    }
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.id === 'coupon-input') {
+      e.preventDefault();
+      applyCoupon();
+    }
+  });
+
+  function applyCoupon() {
+    const input = document.getElementById('coupon-input');
+    const v = input ? input.value : '';
+    if (cart.setCoupon(v)) {
+      couponOpen = false;
+      renderCart();
+      Y.toast('Cupom aplicado');
+    } else {
+      document.getElementById('coupon-msg').textContent = 'Cupom inválido. Confira o código.';
+    }
+  }
+
+  window.addEventListener('storage', () => {
+    renderCart();
+    renderOrders();
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    renderCart();
+    renderOrders();
+  });
 })();
