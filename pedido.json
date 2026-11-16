@@ -1,0 +1,27 @@
+{
+  "codigo_pedido": "YUN-1794794688656",
+  "usuario_id": null,
+  "nome_loja": "Yuniku",
+  "data_pedido": "2026-11-16T02:04:48.656Z",
+  "valor_total": 82.9,
+  "status": "Pendente",
+  "subtotal": 82.9,
+  "desconto": 0,
+  "cupom": null,
+  "itens": [
+    {
+      "produto_id": 3,
+      "nome": "Yopokki queijo",
+      "quantidade": 1,
+      "preco_unitario": 18.9,
+      "subtotal": 18.9
+    },
+    {
+      "produto_id": 2,
+      "nome": "Lamen shoyu",
+      "quantidade": 2,
+      "preco_unitario": 32,
+      "subtotal": 64
+    }
+  ]
+}
